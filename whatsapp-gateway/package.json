@@ -1,0 +1,19 @@
+{
+  "name": "erp-whatsapp-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Gateway WhatsApp (Baileys, conexao por QR code) para os alertas do erp-automation",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "6.7.24",
+    "pino": "^9.6.0",
+    "qrcode": "1.5.4"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,125 @@
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: erp_db
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-erp_automation}
+      POSTGRES_USER: ${POSTGRES_USER:-erp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: .
+      target: dev
+    env_file: .env
+    environment:
+      DATABASE_URL: ""
+      POSTGRES_HOST: db
+    volumes:
+      - ./src:/app/src
+      - ./migrations:/app/migrations
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      target: dev
+    container_name: erp_api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: ""
+      POSTGRES_HOST: db
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - ./src:/app/src
+      - ./migrations:/app/migrations
+      - ./tests:/app/tests
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0 --port 8000 --reload
+
+  worker:
+    build:
+      context: .
+      target: dev
+    container_name: erp_worker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: ""
+      POSTGRES_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+    command: ["python", "-m", "app.workers.monitor"]
+    profiles: ["worker"]
+
+  anomalias:
+    build:
+      context: .
+      target: dev
+    container_name: erp_anomalias
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: ""
+      POSTGRES_HOST: db
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - ./src:/app/src
+    command: ["python", "-m", "app.workers.anomalias"]
+    profiles: ["ia"]
+
+  whatsapp-gateway:
+    build: ./whatsapp-gateway
+    container_name: erp_whatsapp_gateway
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - whatsapp_sessao:/app/auth
+    profiles: ["whatsapp"]
+
+  sincronizador:
+    build:
+      context: .
+      target: dev
+    container_name: erp_sincronizador
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: ""
+      POSTGRES_HOST: db
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - ./src:/app/src
+    command: ["python", "-m", "app.workers.sincronizacao"]
+
+volumes:
+  pgdata:
+  whatsapp_sessao:

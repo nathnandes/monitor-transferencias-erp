@@ -1,0 +1,114 @@
+name: erp-prod
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-erp_automation}
+      POSTGRES_USER: ${POSTGRES_USER:?defina POSTGRES_USER no .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: .
+      target: prod
+    image: erp-api:prod
+    env_file: .env
+    environment:
+      DATABASE_URL: ""
+      POSTGRES_HOST: db
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    image: erp-api:prod
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: ""
+      POSTGRES_HOST: db
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  worker:
+    image: erp-api:prod
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: ""
+      POSTGRES_HOST: db
+    command: ["python", "-m", "app.workers.monitor"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  anomalias:
+    image: erp-api:prod-ia
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: ""
+      POSTGRES_HOST: db
+    command: ["python", "-m", "app.workers.anomalias"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    profiles: ["ia"]
+
+  whatsapp-gateway:
+    build: ./whatsapp-gateway
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - whatsapp_sessao:/app/auth
+    profiles: ["whatsapp"]
+
+  sincronizador:
+    image: erp-api:prod
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: ""
+      POSTGRES_HOST: db
+    command: ["python", "-m", "app.workers.sincronizacao"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: frontend
+      args:
+        VITE_TIMEZONE: ${TZ:-America/Porto_Velho}
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-80}:80"
+      - "${WEB_TLS_PORT:-443}:443"
+    volumes:
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  whatsapp_sessao:

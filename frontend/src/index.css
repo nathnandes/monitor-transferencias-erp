@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+
+@theme {
+  --color-plano: #f3f4f6;
+  --color-superficie: #ffffff;
+  --color-superficie-2: #f7f8fa;
+  --color-superficie-3: #eceef2;
+  --color-borda: #e3e5e9;
+  --color-borda-forte: #cfd3da;
+
+  --color-texto: #1c1f24;
+  --color-texto-2: #474c55;
+  --color-texto-mudo: #686e78;
+
+  --color-acento: #3ecf9b;
+  --color-acento-forte: #2fb585;
+  --color-acento-texto: #11664a;
+  --color-acento-suave: rgb(246 197 0 / 0.16);
+  --color-foco: #1c1f24;
+
+  --color-bom: #16a34a;
+  --color-bom-texto: #15803d;
+  --color-aviso: #f39c12;
+  --color-aviso-texto: #b45309;
+  --color-serio: #ec835a;
+  --color-serio-texto: #c2410c;
+  --color-critico: #dc2626;
+  --color-critico-texto: #b91c1c;
+  --color-info: #2563eb;
+  --color-info-texto: #1d4ed8;
+
+  --font-sans: "Figtree Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Figtree Variable", system-ui, "Segoe UI", sans-serif;
+  --font-marca: "Montserrat Variable", system-ui, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  
+  --text-metrica: 2rem;
+  --text-metrica--line-height: 1.1;
+  --text-metrica--font-weight: 800;
+
+  
+  --radius-painel: 0.5rem;
+  --shadow-painel: 0 1px 1px rgb(16 24 40 / 0.03);
+  --shadow-elevado: 0 16px 40px -12px rgb(16 24 40 / 0.25), 0 0 0 1px rgb(16 24 40 / 0.06);
+
+  
+  --spacing-secao: 1.75rem;
+  --spacing-painel: 1.5rem;
+}
+
+:root {
+  color-scheme: light;
+}
+
+
+.tema-escuro {
+  color-scheme: dark;
+  --color-plano: #0a0a0a;
+  --color-superficie: #161616;
+  --color-superficie-2: #1f1f1f;
+  --color-superficie-3: #272727;
+  --color-borda: #2a2a2a;
+  --color-borda-forte: #3a3a3a;
+  --color-texto: #f5f5f5;
+  --color-texto-2: #c6c6c6;
+  --color-texto-mudo: #9b9b9b;
+  --color-acento-texto: #ffd84d;
+  --color-acento-suave: rgb(246 197 0 / 0.12);
+  --color-foco: #3ecf9b;
+  --color-bom: #0ca30c;
+  --color-bom-texto: #4ade4a;
+  --color-aviso-texto: #f5b04a;
+  --color-serio-texto: #f09a78;
+  --color-critico: #d03b3b;
+  --color-critico-texto: #f07070;
+  --color-info: #3987e5;
+  --color-info-texto: #7fb2f0;
+  --shadow-painel: inset 0 1px 0 rgb(255 255 255 / 0.03), 0 1px 2px rgb(0 0 0 / 0.45);
+  --shadow-elevado: 0 12px 32px -8px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.04);
+}
+
+body {
+  background: var(--color-plano);
+  color: var(--color-texto);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+
+@layer base {
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-foco);
+    outline-offset: 2px;
+  }
+}
+
+
+.tema-escuro input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+
+.marca {
+  font-family: var(--font-marca);
+  font-style: italic;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
+
+.marca-apoio {
+  font-family: var(--font-marca);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+
+@layer components {
+  .btn {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold whitespace-nowrap transition-[color,background-color,border-color,transform] duration-150 sm:h-9 disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-progress;
+  }
+  .btn-sm {
+    @apply h-9 gap-1.5 px-3 text-xs sm:h-8;
+  }
+  .btn-primario {
+    @apply bg-acento font-semibold text-black shadow-[inset_0_-1px_0_rgb(0_0_0/0.12)] enabled:hover:bg-acento-forte enabled:active:translate-y-px;
+  }
+  .btn-secundario {
+    @apply border border-borda-forte bg-superficie text-texto enabled:hover:border-texto-mudo enabled:hover:bg-superficie-2 enabled:active:translate-y-px;
+  }
+  
+  .btn-acento-suave {
+    @apply border border-acento/60 bg-acento-suave text-acento-texto enabled:hover:border-acento enabled:hover:bg-acento/20;
+  }
+  .btn-fantasma {
+    @apply text-texto-2 enabled:hover:bg-superficie-3 enabled:hover:text-texto;
+  }
+
+  
+  input::-ms-reveal,
+  input::-ms-clear {
+    display: none;
+  }
+
+  .campo {
+    @apply h-10 w-full rounded-md border border-borda-forte bg-superficie px-3 text-sm text-texto shadow-[0_1px_2px_rgb(16_24_40/0.04)] outline-none transition-colors sm:h-9 hover:border-texto-mudo focus:border-acento-forte focus:ring-3 focus:ring-acento/30 disabled:opacity-60 aria-invalid:border-critico;
+  }
+}
+
+
+@keyframes progresso-indeterminado {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+.barra-progresso {
+  animation: progresso-indeterminado 1.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .barra-progresso {
+    animation: none;
+    transform: none;
+    width: 100%;
+    opacity: 0.6;
+  }
+}
