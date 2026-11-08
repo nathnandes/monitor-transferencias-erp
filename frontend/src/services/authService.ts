@@ -39,7 +39,7 @@ export async function logout(token: string): Promise<void> {
   try {
     await postJson<void>(CAMINHO_LOGOUT, undefined, { token, timeoutMs: 5_000 });
   } catch {
-
+    // Falha ignorada de propósito.
   }
 }
 

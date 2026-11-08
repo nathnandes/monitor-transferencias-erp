@@ -147,7 +147,7 @@ async function requisitar<T>(
       try {
         corpo = await resposta.json();
       } catch {
-
+        // Falha ignorada de propósito.
       }
 
       if (resposta.status === 401 && token) auth.aoRecusarToken(token);

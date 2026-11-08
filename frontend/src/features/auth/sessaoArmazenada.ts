@@ -31,7 +31,7 @@ export function salvarSessao(sessao: SessaoArmazenada): void {
   try {
     window.sessionStorage.setItem(CHAVE, JSON.stringify(sessao));
   } catch {
-
+    // Falha ignorada de propósito.
   }
 }
 
@@ -39,7 +39,7 @@ export function limparSessao(): void {
   try {
     window.sessionStorage.removeItem(CHAVE);
   } catch {
-
+    // Falha ignorada de propósito.
   }
 }
 
